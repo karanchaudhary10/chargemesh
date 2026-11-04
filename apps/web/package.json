@@ -1,0 +1,31 @@
+{
+  "name": "@chargemesh/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@chargemesh/shared": "*",
+    "@hashgraph/sdk": "^2.41.0",
+    "@magic-ext/hedera": "^2.11.0",
+    "hashconnect": "^3.0.14",
+    "jsqr": "^1.4.0",
+    "lucide-react": "^0.546.0",
+    "magic-sdk": "^33.13.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^6.1.2",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.5"
+  }
+}

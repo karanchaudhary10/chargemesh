@@ -1,0 +1,4 @@
+# ChargeMesh CRE project. This workflow is offchain-only, so no EVM RPCs are required.
+staging-settings: {}
+
+production-settings: {}

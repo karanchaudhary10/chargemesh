@@ -1,0 +1,19 @@
+{
+  "name": "@chargemesh/device-simulator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Software-only simulated ESP32 electricity meter for ChargeMesh",
+  "scripts": {
+    "key:init": "node src/cli.js key:init",
+    "key:show": "node src/cli.js key:show",
+    "reading": "node src/cli.js reading",
+    "readings": "node src/cli.js readings",
+    "verify": "node src/cli.js verify",
+    "tamper": "node src/cli.js tamper",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,21 @@
+node_modules/
+dist/
+coverage/
+data/
+.env
+.env.*
+!.env.example
+!**/.env.example
+cre/secrets.yaml
+cre/.env
+cre/**/.cre/
+*.log
+.DS_Store
+device-simulator/keys/
+device-simulator/state/
+
+# Hedera/secrets
+.env
+.env.local
+*.pem
+keys/

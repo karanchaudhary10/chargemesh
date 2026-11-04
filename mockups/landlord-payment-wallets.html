@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Landlord — Payment Wallets | ChargeMesh</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .fade-in { animation: fadeIn .25s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased">
+  <div class="min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex w-60 shrink-0 flex-col bg-white border-r border-slate-200">
+      <div class="h-16 flex items-center gap-2 px-5 border-b border-slate-100">
+        <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold">C</div>
+        <div>
+          <div class="text-sm font-bold leading-tight">ChargeMesh</div>
+          <div class="text-[10px] text-slate-400">Landlord workspace</div>
+        </div>
+      </div>
+      <nav class="p-3 space-y-1 text-xs font-semibold text-slate-600">
+        <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50" href="#"><i data-lucide="layout-dashboard" class="w-4 h-4"></i>Overview</a>
+        <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50" href="#"><i data-lucide="home" class="w-4 h-4"></i>Rooms</a>
+        <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50" href="#"><i data-lucide="receipt" class="w-4 h-4"></i>Bills</a>
+        <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50" href="#"><i data-lucide="gauge" class="w-4 h-4"></i>Meter readings</a>
+        <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50" href="#"><i data-lucide="message-square" class="w-4 h-4"></i>Questions</a>
+        <a class="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-700" href="#"><i data-lucide="settings" class="w-4 h-4"></i>Settings</a>
+      </nav>
+    </aside>
+
+    <main class="flex-1 min-w-0">
+      <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-5 sm:px-8">
+        <div class="text-xs font-semibold text-slate-500">Settings</div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-500">Karan Chaudhary</span>
+          <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold">KC</div>
+        </div>
+      </header>
+
+      <div class="p-5 sm:p-8 max-w-4xl space-y-8 fade-in">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight">Property &amp; Tariff Settings</h1>
+          <p class="text-sm text-slate-500 mt-1">Configure property address, electricity rate per kWh, and landlord preferences.</p>
+        </div>
+
+        <!-- Payment wallets -->
+        <section class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+          <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
+            <i data-lucide="wallet" class="w-4 h-4 text-blue-600"></i>
+            <div>
+              <h2 class="text-sm font-bold">Payment Wallets</h2>
+              <p class="text-[11px] text-slate-500 mt-0.5">Add your receive details once. Every bill you send shows them automatically.</p>
+            </div>
+          </div>
+
+          <!-- saved wallets -->
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between gap-3 p-3 rounded-xl border border-amber-200 bg-amber-50/40">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                  <i data-lucide="qr-code" class="w-5 h-5 text-slate-400"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-xs font-bold text-slate-900">eSewa — Karan</span>
+                    <span class="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-semibold text-slate-600">eSewa</span>
+                    <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-[10px] font-semibold text-amber-700">
+                      <i data-lucide="star" class="w-2.5 h-2.5"></i>Default
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-slate-500 font-mono mt-0.5">9841 23 4567</p>
+                </div>
+              </div>
+              <button class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50" title="Remove"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+            </div>
+
+            <div class="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50/60">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                  <i data-lucide="landmark" class="w-5 h-5 text-slate-400"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-xs font-bold text-slate-900">NIC Asia — Current</span>
+                    <span class="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-semibold text-slate-600">Bank account</span>
+                  </div>
+                  <p class="text-[11px] text-slate-500 font-mono mt-0.5">01234567890123 · NICASIA</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button class="px-2 py-1.5 rounded-lg text-[10px] font-semibold text-slate-600 border border-slate-200 bg-white hover:bg-slate-100">Set default</button>
+                <button class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- add wallet -->
+          <div class="pt-3 border-t border-slate-100 space-y-3">
+            <p class="text-[11px] font-bold text-slate-700">Add a wallet</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <label class="block">
+                <span class="block font-semibold text-slate-700 mb-1.5">Wallet type</span>
+                <select class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium">
+                  <option>eSewa</option><option>Fonepay</option><option>Khalti</option><option>Bank account</option><option>Other</option>
+                </select>
+              </label>
+              <label class="block">
+                <span class="block font-semibold text-slate-700 mb-1.5">Label</span>
+                <input class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium" placeholder="e.g. Khalti — Karan" />
+              </label>
+              <label class="block">
+                <span class="block font-semibold text-slate-700 mb-1.5">Account / phone / bank no.</span>
+                <input class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium" placeholder="98XXXXXXXX" />
+              </label>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+              <button class="inline-flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-semibold text-slate-700 hover:bg-slate-100">
+                <i data-lucide="image-plus" class="w-3.5 h-3.5 text-slate-500"></i>Upload QR image (optional)
+              </button>
+              <label class="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600">
+                <input type="checkbox" class="rounded border-slate-300" />Use as default
+              </label>
+              <button class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold sm:ml-auto">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>Add wallet
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Bills preview -->
+        <section class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+          <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
+            <i data-lucide="receipt" class="w-4 h-4 text-blue-600"></i>
+            <h2 class="text-sm font-bold">How renters see it</h2>
+          </div>
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs font-bold text-slate-900">Bill #102 · Room 102</p>
+                <p class="text-[11px] text-slate-500">Oct 15 to Nov 15, 2026</p>
+              </div>
+              <span class="px-2.5 py-0.5 rounded text-[11px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">Pending verification</span>
+            </div>
+            <div class="p-3 rounded-lg bg-indigo-50/70 border border-indigo-100 text-xs space-y-1.5">
+              <div class="flex items-center gap-2 font-bold text-indigo-900">
+                <i data-lucide="clock" class="w-4 h-4"></i>Payment submitted by renter
+              </div>
+              <div class="flex justify-between gap-3 text-indigo-800"><span>Transaction ID</span><span class="font-mono font-semibold">0A12B34C56D78E90</span></div>
+              <div class="flex justify-between gap-3 text-indigo-800"><span>Paid to</span><span class="font-semibold">eSewa — Karan</span></div>
+            </div>
+            <button class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold inline-flex items-center justify-center gap-2">
+              <i data-lucide="badge-check" class="w-3.5 h-3.5"></i>Verify &amp; Mark as Paid
+            </button>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>
