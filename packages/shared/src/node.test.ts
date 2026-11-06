@@ -108,13 +108,15 @@ describe("audit hash chain", () => {
 
 describe("evidence hashes", () => {
   it("stays stable across object key order and changes with content", () => {
-    const bundle: Pick<EvidenceBundle, "sessions" | "audit"> = {
+    const bundle: Pick<EvidenceBundle, "sessions" | "audit" | "readingEvidenceHash"> = {
       audit: { eventCount: 2, headHash: "a".repeat(64), chainValid: true },
-      sessions: []
-    };
-    const reordered: Pick<EvidenceBundle, "sessions" | "audit"> = {
       sessions: [],
-      audit: { chainValid: true, headHash: "a".repeat(64), eventCount: 2 }
+      readingEvidenceHash: "b".repeat(64)
+    };
+    const reordered: Pick<EvidenceBundle, "sessions" | "audit" | "readingEvidenceHash"> = {
+      sessions: [],
+      audit: { chainValid: true, headHash: "a".repeat(64), eventCount: 2 },
+      readingEvidenceHash: "b".repeat(64)
     };
     expect(computeEvidenceHash(bundle)).toBe(computeEvidenceHash(reordered));
     expect(
@@ -122,6 +124,9 @@ describe("evidence hashes", () => {
         ...bundle,
         audit: { ...bundle.audit, chainValid: false }
       })
+    ).not.toBe(computeEvidenceHash(bundle));
+    expect(
+      computeEvidenceHash({ ...bundle, readingEvidenceHash: "c".repeat(64) })
     ).not.toBe(computeEvidenceHash(bundle));
   });
 });

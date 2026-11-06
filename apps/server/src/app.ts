@@ -1001,6 +1001,14 @@ export function createApp(deps: AppDependencies): express.Express {
     response.json(await deps.cre.evidence());
   });
 
+  app.get("/api/cre/pending-readings", requireCreToken(deps), async (_request, response) => {
+    response.json(await deps.cre.pendingReadings());
+  });
+
+  app.get("/api/cre/reading-evidence", requireCreToken(deps), async (_request, response) => {
+    response.json(await deps.cre.readingEvidence());
+  });
+
   app.post(
     "/api/cre/report",
     requireCreToken(deps),
@@ -1016,7 +1024,7 @@ export function createApp(deps: AppDependencies): express.Express {
     response.status(201).json({ report });
   });
 
-  app.get("/api/cre/reports", operatorOnly, async (request, response) => {
+  app.get("/api/cre/reports", authRequired, async (request, response) => {
     const allowedRooms = new Set(await accessibleRoomIds(requestUser(request), deps));
     const allowedSessions = new Set(
       (await deps.sessions.list())

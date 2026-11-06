@@ -49,6 +49,10 @@ function boolEnv(name: string, fallback: boolean): boolean {
 }
 
 export function loadConfig(): Config {
+  const creReportToken = env("CRE_REPORT_TOKEN");
+  if (creReportToken && creReportToken.length < 32) {
+    throw new Error("CRE_REPORT_TOKEN must contain at least 32 characters when configured.");
+  }
   const network = (env("HEDERA_NETWORK") ?? "testnet").toLowerCase();
   const hederaNetwork = (network === "mainnet" || network === "previewnet" ? network : "testnet") as Config["hederaNetwork"];
   const defaultMirror =
@@ -65,7 +69,7 @@ export function loadConfig(): Config {
     staleAfterMs: numberEnv("STALE_AFTER_MS", 60_000),
     maxPowerW: numberEnv("MAX_POWER_W", 5_000),
     energyJumpTolerance: numberEnv("ENERGY_JUMP_TOLERANCE", 10),
-    creReportToken: env("CRE_REPORT_TOKEN"),
+    creReportToken,
     hederaNetwork,
     hederaOperatorId: env("HEDERA_OPERATOR_ID"),
     hederaOperatorKey: env("HEDERA_OPERATOR_KEY"),

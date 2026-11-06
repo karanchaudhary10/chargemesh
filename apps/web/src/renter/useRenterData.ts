@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   api,
   type Bill,
+  type CreReport,
   type Dispute,
   type Meter,
   type Property,
@@ -38,6 +39,7 @@ export interface RenterData {
   tariff: Tariff | null;
   bills: Bill[];
   disputes: Dispute[];
+  creReports: CreReport[];
   unpaid: Bill[];
   paid: Bill[];
   latestBill?: Bill;
@@ -60,10 +62,16 @@ export function useRenterData(): RenterData {
   const [overview, setOverview] = useState<Awaited<ReturnType<typeof api.renterOverview>> | null>(
     null
   );
+  const [creReports, setCreReports] = useState<CreReport[]>([]);
 
   const reload = useCallback(async () => {
     try {
-      setOverview(await api.renterOverview());
+      const [nextOverview, { reports }] = await Promise.all([
+        api.renterOverview(),
+        api.creReports()
+      ]);
+      setOverview(nextOverview);
+      setCreReports(reports);
       setError(null);
     } catch (err) {
       setError(messageOf(err));
@@ -107,6 +115,7 @@ export function useRenterData(): RenterData {
     tariff: overview?.tariff ?? null,
     bills,
     disputes: overview?.disputes ?? [],
+    creReports,
     unpaid,
     paid,
     latestBill,

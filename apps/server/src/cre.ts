@@ -1,22 +1,33 @@
 import {
   evaluateAttestation,
+  stableStringify,
   type CreReport,
   type CreReportInput,
+  type CreReadingEvidence,
+  type CreReadingEvidenceBundle,
   type EvidenceBundle,
   type EvidenceReading,
+  type Reading,
   type ReadingFlag,
   type SessionEvidence
 } from "@chargemesh/shared";
-import { computeEvidenceHash, reportIdFor, verifyAuditChain } from "@chargemesh/shared/node";
+import {
+  computeEvidenceHash,
+  reportIdFor,
+  sha256Hex,
+  verifyAuditChain
+} from "@chargemesh/shared/node";
 import type { Repositories } from "./repositories.js";
 import { appendAuditEvent } from "./audit-core.js";
 import type { AuditService } from "./audit.js";
 import { AppError } from "./errors.js";
+import type { Config } from "./config.js";
 
 export class CreService {
   constructor(
     private readonly repositories: Repositories,
-    private readonly audit: AuditService
+    private readonly audit: AuditService,
+    private readonly config: Config
   ) {}
 
   async evidence(): Promise<EvidenceBundle> {
@@ -25,7 +36,11 @@ export class CreService {
       this.repositories.readings.list(),
       this.repositories.auditEvents.list()
     ]);
+    const readingEvidence = await this.buildReadingEvidence(allReadings, allAuditEvents);
     const verification = verifyAuditChain(allAuditEvents);
+    const evidenceAuditEvents = allAuditEvents.filter(
+      (event) => event.type !== "cre.report.verified" && event.type !== "cre.report.flagged"
+    );
     const sessions = allBills
       .filter((session) => session.status === "closed" || session.status === "disputed")
       .sort((a, b) => {
@@ -92,10 +107,11 @@ export class CreService {
 
     const core = {
       audit: {
-        eventCount: verification.count,
-        headHash: verification.headHash,
+        eventCount: evidenceAuditEvents.length,
+        headHash: evidenceAuditEvents.at(-1)?.hash ?? "0".repeat(64),
         chainValid: verification.valid
       },
+      readingEvidenceHash: readingEvidence.evidenceHash,
       sessions: evidenceSessions
     };
 
@@ -106,12 +122,117 @@ export class CreService {
     };
   }
 
+  async readingEvidence(): Promise<CreReadingEvidenceBundle> {
+    const [readings, auditEvents] = await Promise.all([
+      this.repositories.readings.list(),
+      this.repositories.auditEvents.list()
+    ]);
+    return this.buildReadingEvidence(readings, auditEvents);
+  }
+
+  async pendingReadings(): Promise<CreReadingEvidenceBundle> {
+    const [readings, auditEvents, reports] = await Promise.all([
+      this.repositories.readings.list(),
+      this.repositories.auditEvents.list(),
+      this.repositories.creReports.list()
+    ]);
+    const mostRecentReportBySession = new Map<string, number>();
+    for (const report of reports) {
+      for (const sessionId of report.sessionIds) {
+        const receivedAt = Date.parse(report.receivedAt);
+        const previous = mostRecentReportBySession.get(sessionId) ?? Number.NEGATIVE_INFINITY;
+        if (receivedAt > previous) {
+          mostRecentReportBySession.set(sessionId, receivedAt);
+        }
+      }
+    }
+
+    const pending = readings.filter((reading) => {
+      if (!reading.sessionId) return true;
+      const lastReportAt = mostRecentReportBySession.get(reading.sessionId);
+      return lastReportAt === undefined || Date.parse(reading.receivedAt) > lastReportAt;
+    });
+    return this.buildReadingEvidence(pending, auditEvents);
+  }
+
+  private async buildReadingEvidence(
+    readings: Reading[],
+    auditEvents: Awaited<ReturnType<Repositories["auditEvents"]["list"]>>
+  ): Promise<CreReadingEvidenceBundle> {
+    const evidenceReadings = await Promise.all(
+      readings.map(async (reading): Promise<CreReadingEvidence> => {
+        const meter = await this.repositories.meters.findById(reading.meterId);
+        if (!meter?.publicKeyPem) {
+          throw new AppError(
+            500,
+            "reading_meter_key_missing",
+            `Cannot create complete CRE evidence for meter ${reading.meterId}`
+          );
+        }
+        return {
+          id: reading.id,
+          payloadHash: reading.payloadHash,
+          meterId: reading.meterId,
+          roomId: reading.roomId,
+          sessionId: reading.sessionId,
+          signedPayload: reading.signedPayload,
+          signature: reading.signature,
+          publicKeyPem: meter.publicKeyPem,
+          status: reading.status,
+          flags: reading.flags,
+          reasons: reading.reasons,
+          maxPowerW: meter.maxPowerW ?? this.config.maxPowerW,
+          energyJumpTolerance: this.config.energyJumpTolerance,
+          receivedAt: reading.receivedAt,
+          auditEvents: auditEvents.filter(
+            (event) => event.payload.readingId === reading.id
+          )
+        };
+      })
+    );
+    evidenceReadings.sort((a, b) => {
+      const byTime = Date.parse(a.signedPayload.timestamp) - Date.parse(b.signedPayload.timestamp);
+      return byTime !== 0 ? byTime : a.id.localeCompare(b.id);
+    });
+    const hashInput = evidenceReadings.map(({ auditEvents: events, ...reading }) => ({
+      ...reading,
+      auditEvents: events.map(({ id, hash, prevHash }) => ({ id, hash, prevHash }))
+    }));
+    return {
+      generatedAt: new Date().toISOString(),
+      evidenceHash: sha256Hex(stableStringify({ readings: hashInput })),
+      readings: evidenceReadings
+    };
+  }
+
   async list(): Promise<CreReport[]> {
-    const reports = await this.repositories.creReports.list();
-    return reports.sort((a, b) => Date.parse(b.receivedAt) - Date.parse(a.receivedAt));
+    const [reports, events] = await Promise.all([
+      this.repositories.creReports.list(),
+      this.repositories.auditEvents.list()
+    ]);
+    const eventByReportId = new Map(
+      events
+        .filter((event) => typeof event.payload.reportId === "string")
+        .map((event) => [event.payload.reportId as string, event])
+    );
+    return reports
+      .map((report) => {
+        const event = eventByReportId.get(report.reportId);
+        return {
+          ...report,
+          auditEventId: event?.id ?? report.auditEventId,
+          hedera: event?.hedera
+        };
+      })
+      .sort((a, b) => Date.parse(b.receivedAt) - Date.parse(a.receivedAt));
   }
 
   async submitReport(input: CreReportInput): Promise<CreReport> {
+    const existing = await this.repositories.creReports.findById(input.reportId);
+    if (existing && existing.evidenceHash === input.evidenceHash && input.evm) {
+      return this.persist({ ...existing, evm: input.evm });
+    }
+
     const current = await this.evidence();
     if (input.evidenceHash !== current.evidenceHash) {
       throw new AppError(
@@ -157,9 +278,19 @@ export class CreService {
             "Report ID is already used for different evidence"
           );
         }
-        return { report: existing, event: undefined };
+        const updated = {
+          ...existing,
+          ...report,
+          receivedAt: existing.receivedAt,
+          auditEventId: existing.auditEventId,
+          evm:
+            report.evm?.status === "pending" && existing.evm
+              ? existing.evm
+              : report.evm ?? existing.evm
+        };
+        await tx.creReports.save(updated);
+        return { report: updated, event: undefined };
       }
-      await tx.creReports.save(report);
       const event = await appendAuditEvent(tx.auditEvents, {
         type: report.status === "verified" ? "cre.report.verified" : "cre.report.flagged",
         actor,
@@ -172,7 +303,9 @@ export class CreService {
           findingCount: report.findings.length
         }
       });
-      return { report, event };
+      const persisted = { ...report, auditEventId: event.id };
+      await tx.creReports.save(persisted);
+      return { report: persisted, event };
     });
     if (result.event) {
       void this.audit.notarize(result.event);

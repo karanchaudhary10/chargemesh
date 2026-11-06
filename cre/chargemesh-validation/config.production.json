@@ -1,5 +1,8 @@
 {
   "schedule": "0 */5 * * * *",
   "apiBaseUrl": "https://replace-with-chargemesh-api.example",
-  "reportToken": ""
+  "evm": {
+    "chainSelectorName": "ethereum-sepolia",
+    "contractAddress": ""
+  }
 }

@@ -309,12 +309,37 @@ export interface SessionEvidence {
 export interface EvidenceBundle {
   generatedAt: IsoTimestamp;
   evidenceHash: string;
+  readingEvidenceHash: string;
   audit: {
     eventCount: number;
     headHash: string;
     chainValid: boolean;
   };
   sessions: SessionEvidence[];
+}
+
+export interface CreReadingEvidence {
+  id: string;
+  payloadHash: string;
+  meterId: string;
+  roomId?: string;
+  sessionId?: string;
+  signedPayload: RawSignedReadingPayload;
+  signature: string;
+  publicKeyPem: string;
+  status: ReadingStatus;
+  flags: ReadingFlag[];
+  reasons: string[];
+  maxPowerW: number;
+  energyJumpTolerance: number;
+  receivedAt: IsoTimestamp;
+  auditEvents: AuditEvent[];
+}
+
+export interface CreReadingEvidenceBundle {
+  generatedAt: IsoTimestamp;
+  evidenceHash: string;
+  readings: CreReadingEvidence[];
 }
 
 export type AttestationSeverity = "error" | "warning";
@@ -340,6 +365,17 @@ export interface CreReport {
   sessionIds: string[];
   evidenceHash: string;
   receivedAt: IsoTimestamp;
+  evm?: {
+    status: "pending" | "submitted" | "failed";
+    chainSelectorName: string;
+    contractAddress: string;
+    transactionHash?: string;
+    explorerUrl?: string;
+    error?: string;
+    updatedAt: IsoTimestamp;
+  };
+  auditEventId?: string;
+  hedera?: HederaAuditReference;
 }
 
 export interface SessionDetail {

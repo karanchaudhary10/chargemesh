@@ -212,6 +212,16 @@ const findingSchema = z.object({
   sessionId: z.string().max(120).optional()
 });
 
+const creEvmResultSchema = z.object({
+  status: z.enum(["pending", "submitted", "failed"]),
+  chainSelectorName: z.string().min(1).max(80),
+  contractAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
+  transactionHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/).optional(),
+  explorerUrl: z.string().url().optional(),
+  error: z.string().max(1000).optional(),
+  updatedAt: isoDate
+});
+
 export const creReportSchema = z.object({
   reportId: z.string().min(1).max(120),
   generatedAt: isoDate,
@@ -219,7 +229,8 @@ export const creReportSchema = z.object({
   status: z.enum(["verified", "flagged", "review"]),
   findings: z.array(findingSchema).max(1000),
   sessionIds: z.array(z.string().max(120)).max(1000),
-  evidenceHash: z.string().regex(/^[a-f0-9]{64}$/)
+  evidenceHash: z.string().regex(/^[a-f0-9]{64}$/),
+  evm: creEvmResultSchema.optional()
 });
 
 export const ensResolveSchema = z.object({

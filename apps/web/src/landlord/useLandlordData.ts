@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { api, type Property, type Tariff } from "../api.js";
+import { api, type CreReport, type Property, type Tariff } from "../api.js";
 import {
   buildBillView,
   buildDisputeView,
@@ -30,6 +30,7 @@ export interface LandlordData {
   rooms: RoomView[];
   bills: BillView[];
   disputes: DisputeView[];
+  creReports: CreReport[];
   tariffs: Tariff[];
   wallets: any[];
   /** Rate shown as "the" property rate: its default, else the most common room rate. */
@@ -45,18 +46,20 @@ export function useLandlordData(): LandlordData {
   const [allRooms, setAllRooms] = useState<RoomView[]>([]);
   const [allBills, setAllBills] = useState<BillView[]>([]);
   const [allDisputes, setAllDisputes] = useState<DisputeView[]>([]);
+  const [creReports, setCreReports] = useState<CreReport[]>([]);
   const [tariffs, setTariffs] = useState<Tariff[]>([]);
   const [wallets, setWallets] = useState<any[]>([]);
 
   const reload = useCallback(async () => {
     try {
-      const [{ properties }, { rooms }, { tariffs }, { bills }, { disputes }, { wallets: walletList }] = await Promise.all([
+      const [{ properties }, { rooms }, { tariffs }, { bills }, { disputes }, { wallets: walletList }, { reports }] = await Promise.all([
         api.properties(),
         api.rooms(),
         api.tariffs(),
         api.bills(),
         api.disputes(),
-        api.wallets().catch(() => ({ wallets: [] }))
+        api.wallets().catch(() => ({ wallets: [] })),
+        api.creReports()
       ]);
       const tenancies = await Promise.all(
         rooms.map((overview) =>
@@ -73,6 +76,7 @@ export function useLandlordData(): LandlordData {
       setAllRooms(roomViews);
       setAllBills(billViews);
       setAllDisputes(disputes.map((dispute) => buildDisputeView(dispute, billViews)));
+      setCreReports(reports);
       setWallets(walletList ?? []);
       setError(null);
     } catch (err) {
@@ -123,6 +127,7 @@ export function useLandlordData(): LandlordData {
     property,
     selectProperty,
     ...scoped,
+    creReports,
     tariffs,
     wallets,
     propertyRate,

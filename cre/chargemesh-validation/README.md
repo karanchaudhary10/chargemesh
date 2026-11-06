@@ -1,56 +1,68 @@
-# ChargeMesh CRE validation workflow
+# ChargeMesh CRE verification workflow
 
-This workflow periodically fetches the current ChargeMesh evidence bundle, evaluates billing invariants, and posts a report back to the API.
+The workflow fetches session billing evidence and pending signed readings,
+evaluates verification policy, writes a deterministic report through the CRE
+Forwarder to `ReadingVerifier`, verifies the stored result, and posts the
+structured report to the ChargeMesh API.
 
-It is a real CRE workflow source using `@chainlink/cre-sdk`, not part of the npm workspace. It has not been simulated or deployed in this environment because Bun and the CRE CLI are not installed.
+## API contract
 
-## Flow
+- `GET /api/cre/evidence` returns closed/disputed sessions, billing arithmetic,
+  audit-chain validity, and a hash that also commits to complete reading evidence.
+- `GET /api/cre/pending-readings` returns signed readings received after the
+  latest CRE report for their session, including the meter public key, payload,
+  signature, validation flags/reasons, and audit events. Unassigned readings
+  remain pending until associated with a report.
+- `GET /api/cre/reading-evidence` returns the complete signed-reading evidence
+  set for audit/debug use.
+- `POST /api/cre/report` accepts a structured result and its on-chain status.
+  Reposting the same report ID and evidence hash updates the EVM receipt
+  idempotently; audit entries created for reports do not change the evidence
+  hash.
 
-1. Cron trigger fires every 30 seconds in staging.
-2. `GET /api/cre/evidence` returns closed/disputed sessions, accepted/rejected/quarantined readings, audit references, and an evidence hash.
-3. Nodes reach consensus on the bundle with `consensusIdenticalAggregation`.
-4. `policy.ts` checks audit-chain validity, rejected/quarantined readings, signature/sequence anomalies, energy and amount arithmetic, reading span, and audit evidence.
-5. The deterministic report ID is derived from the evidence hash.
-6. `POST /api/cre/report` validates that the evidence hash is still current and persists the report idempotently.
+All four routes require `x-cre-token`. Configure the server's
+`CRE_REPORT_TOKEN` with at least 32 characters and register the same value as
+the CRE secret ID `CRE_REPORT_TOKEN` referenced by `workflow.yaml`. Generate a
+value locally, for example with `openssl rand -hex 32`. The workflow reads this
+secret with CRE's runtime secret API; the value is not stored in tracked config.
+The local secrets file at `cre/secrets.yaml` is git-ignored.
 
-Reports posted by this workflow use `source: "cre-workflow"`. The server's `/api/cre/simulate` fallback uses `source: "local-fallback"`.
+## Local setup and simulation
 
-## Prerequisites
+Prerequisites:
 
 - Bun `>=1.2.21`
 - Chainlink CRE CLI
-- A running ChargeMesh API on `http://localhost:4000`
-- CRE CLI login (`cre login`)
+- A running ChargeMesh API
+- CRE CLI login (`cre login`, then `cre whoami`)
+- A deployed `ReadingVerifier` and the official Ethereum Sepolia Forwarder
 
-## Install and simulate
+Install and simulate:
 
 ```bash
 bun install
-cre login
-cre whoami
 cre workflow simulate ./ --target staging-settings
 ```
 
-The CLI may prompt for a cron trigger selection during simulation.
+Set `evm.contractAddress` in `config.staging.json` to the deployed receiver.
+The testnet selector is `ethereum-sepolia`. Keep tokens and deployment
+credentials out of tracked JSON files.
 
-## Configuration
+## Policy and retry behavior
 
-`config.staging.json`:
+The workflow checks evidence hashes, audit-chain validity, billing totals,
+reading status, signature-evidence presence, known validation flags, duplicate sequences,
+timestamp ordering, power limits, and implied-power jumps. The API verifies Ed25519 signatures before
+persisting readings; CRE evaluates the server-provided signed evidence and does
+not independently implement Ed25519 cryptography.
 
-```json
-{
-  "schedule": "*/30 * * * * *",
-  "apiBaseUrl": "http://localhost:4000",
-  "reportToken": ""
-}
-```
+Each cron execution retries reports whose previous EVM write failed. The
+receiver treats an identical report as a successful no-op and rejects report
+ID reuse with different contents. After a successful write, the workflow
+reads the stored verification back before it marks the EVM result as submitted.
+The API report exposes its transaction and HCS audit references to landlord and
+renter views.
 
-`config.production.json` contains a placeholder API URL. Replace it before deployment. Set `reportToken` through the CRE secrets mechanism or an untracked deployment-specific config; do not commit a real token.
-
-If `CRE_REPORT_TOKEN` is set on the API, both evidence fetch and report submission must send `x-cre-token`.
-
-## Verification boundary
-
-- The workflow verifies evidence integrity and billing arithmetic, but it does not independently re-verify every meter signature or query Hedera consensus directly.
-- The report is authenticated by the shared CRE token. It is not submitted as an onchain signed report, and this project does not verify Chainlink report signatures.
-- `audit.chainValid` reflects the local server hash chain. Optional HCS references are included for operator lookup, not as a trustless source.
+The CRE workflow cannot be deployed from this checkout until a deployed
+Sepolia receiver address and CRE secrets are configured. See
+[`contracts/README.md`](../../contracts/README.md) for deployment preparation.

@@ -49,9 +49,12 @@ export function canonicalReadingJson(payload: RawSignedReadingPayload): string {
   return stableStringify(payload);
 }
 
-export function evidenceHashInput(bundle: Pick<EvidenceBundle, "sessions" | "audit">): string {
+export function evidenceHashInput(
+  bundle: Pick<EvidenceBundle, "sessions" | "audit" | "readingEvidenceHash">
+): string {
   return stableStringify({
     sessions: bundle.sessions,
-    audit: bundle.audit
+    audit: bundle.audit,
+    readingEvidenceHash: bundle.readingEvidenceHash
   });
 }

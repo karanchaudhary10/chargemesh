@@ -15,7 +15,9 @@ const SIGNATURE_ANOMALIES = new Set([
   "duplicate_reading",
   "replayed_sequence",
   "out_of_order_timestamp",
-  "meter_reset"
+  "meter_reset",
+  "suspicious_power",
+  "suspicious_energy_jump"
 ]);
 
 function evaluateSession(session: SessionEvidence): AttestationFinding[] {

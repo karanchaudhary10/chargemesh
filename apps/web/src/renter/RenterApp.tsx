@@ -29,6 +29,7 @@ import {
 } from "../components/ui.js";
 import { ChargeMeshBrand } from "../components/Brand.js";
 import { ThemeToggle } from "../components/ThemeToggle.js";
+import { CreVerificationPanel } from "../components/CreVerificationPanel.js";
 import { BillDetail } from "./BillDetail.js";
 import { HomeView } from "./HomeView.js";
 import { PaymentDialog } from "./PaymentDialog.js";
@@ -514,13 +515,16 @@ export function RenterApp({
         )}
 
         {view === "home" ? (
-          <HomeView
-            user={user}
-            data={data}
-            onOpenBill={openBill}
-            onOpenBills={() => setView("bills")}
-            onPay={requestPay}
-          />
+          <div className="space-y-6">
+            <HomeView
+              user={user}
+              data={data}
+              onOpenBill={openBill}
+              onOpenBills={() => setView("bills")}
+              onPay={requestPay}
+            />
+            <CreVerificationPanel reports={data.creReports} />
+          </div>
         ) : (
           <BillsView
             data={data}

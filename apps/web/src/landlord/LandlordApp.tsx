@@ -5,6 +5,7 @@ import { firstName } from "../lib/format.js";
 import { messageOf } from "../lib/model.js";
 import { ChargeMeshBrand } from "../components/Brand.js";
 import { ThemeToggle } from "../components/ThemeToggle.js";
+import { CreVerificationPanel } from "../components/CreVerificationPanel.js";
 import {
   Alert,
   Loading,
@@ -313,7 +314,12 @@ export function LandlordApp({
           />
         )}
 
-        {tab === "readings" && <MeterReadingsView rooms={workspace.rooms} />}
+        {tab === "readings" && (
+          <div className="space-y-6">
+            <MeterReadingsView rooms={workspace.rooms} />
+            <CreVerificationPanel reports={data.creReports} />
+          </div>
+        )}
 
         {tab === "disputes" && (
           <DisputesView

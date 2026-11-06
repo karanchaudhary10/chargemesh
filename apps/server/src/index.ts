@@ -33,7 +33,7 @@ async function main(): Promise<void> {
   const rooms = new RoomService(repositories, keys, audit, config);
   const readings = new ReadingService(repositories, audit, config);
   const sessions = new SessionService(repositories, audit, hedera);
-  const cre = new CreService(repositories, audit);
+  const cre = new CreService(repositories, audit, config);
   const tariffs = new TariffService(repositories, audit);
   const billing = new BillingService(repositories, audit, tariffs);
 

@@ -142,7 +142,9 @@ export function verifyAuditChain(events: AuditEvent[]): AuditVerification {
   };
 }
 
-export function computeEvidenceHash(bundle: Pick<EvidenceBundle, "sessions" | "audit">): string {
+export function computeEvidenceHash(
+  bundle: Pick<EvidenceBundle, "sessions" | "audit" | "readingEvidenceHash">
+): string {
   return sha256Hex(evidenceHashInput(bundle));
 }
 

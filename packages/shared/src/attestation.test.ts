@@ -48,6 +48,7 @@ function bundle(sessions: SessionEvidence[], chainValid = true): EvidenceBundle 
   return {
     generatedAt: "2026-10-23T10:00:00.000Z",
     evidenceHash: "a".repeat(64),
+    readingEvidenceHash: "c".repeat(64),
     audit: { eventCount: 2, headHash: "b".repeat(64), chainValid },
     sessions
   };

@@ -1,6 +1,7 @@
 import type {
   Bill,
   BillPaymentDetails,
+  CreReport,
   Dispute,
   Meter,
   Property,
@@ -17,6 +18,7 @@ import type {
 export type {
   Bill,
   BillPaymentDetails,
+  CreReport,
   Dispute,
   Meter,
   Property,
@@ -196,5 +198,6 @@ export const api = {
 
   // verification
   status: () => request<ServerStatus>("/api/status"),
-  verifyAudit: () => request<{ valid: boolean; count: number; headHash?: string; brokenAt?: number }>("/api/audit/verify")
+  verifyAudit: () => request<{ valid: boolean; count: number; headHash?: string; brokenAt?: number }>("/api/audit/verify"),
+  creReports: () => request<{ reports: CreReport[] }>("/api/cre/reports")
 };
