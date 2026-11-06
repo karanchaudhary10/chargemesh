@@ -1,4 +1,4 @@
-# ChargeMesh - Hackathon Project README
+# ChargeMesh
 
 ## Project Overview
 
@@ -127,23 +127,23 @@ Built for **ETHGlobal Mumbai 2026**, ChargeMesh bridges the physical and digital
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    CHARGEMesh ECOSYSTEM                               │
+│                    CHARGEMesh ECOSYSTEM                                     │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│  ┌─────────────────────┐    ┌─────────────────────┐    ┌─────────────────┐ │
-│  │       ESP32         │    │   ChargeMesh API    │    │  PostgreSQL     │ │
-│  │   (Power Meter)     │→→→│ (Node.js/TS Server) │→→│ (6 Schemas:      │ │
-│  │                     │    │                     │    │   identity,     │ │
-│  │   Voltage/Current   │    │   API Endpoints     │    │   property,     │ │
-│  │   Power/Energy      │    │   (/api/readings)   │    │   metering,     │ │
-│  └─────────────────────┘    └─────────────────────┘    └─────────────────┘ │
-│           │                      │                      │                │
-│           │                      │                      │                │
-│           ▼                      ▼                      ▼                │
-│  ┌─────────────────────┐    ┌─────────────────────┐    ┌────────────────┐ │
-│  │   React Dashboard   │    │   HCS (Consensus    │    │   system.config │ │
-│  │ (Landlord/Renter)   │    │   Service Topic)    │    │   integration   │ │
-│  │                     │    │   topic: 0.0.11169785│ │   state        │ │
-│  └─────────────────────┘    └─────────────────────┘    └────────────────┘ │
+│  ┌─────────────────────┐    ┌─────────────────────┐    ┌─────────────────┐  │
+│  │       ESP32         │    │   ChargeMesh API    │    │  PostgreSQL     │  │
+│  │   (Power Meter)     │→→→ │ (Node.js/TS Server) │→→  │ (6 Schemas:)    │  │
+│  │                     │    │                     │    │   identity,     │  │
+│  │   Voltage/Current   │    │   API Endpoints     │    │   property,     │  │
+│  │   Power/Energy      │    │   (/api/readings)   │    │   metering,     │  │
+│  └─────────────────────┘    └─────────────────────┘    └─────────────────┘  │
+│           │                      │                            │             │
+│           │                      │                            │             │
+│           ▼                      ▼                            ▼             │
+│  ┌─────────────────────┐    ┌─────────────────────┐    ┌────────────────┐   │
+│  │   React Dashboard   │    │   HCS (Consensus    │    │   system.config│   │
+│  │ (Landlord/Renter)   │    │   Service Topic)    │    │   integration  │   │
+│  │                     │    │  topic: 0.0.11169785│    │   state        │   │
+│  └─────────────────────┘    └─────────────────────┘    └────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -292,7 +292,7 @@ User → Wallets (Hedera accounts)
 {
   "nonce": "test001",
   "powerW": 7.7,
-  "roomId": "room_<room-id>_<uuid>",
+  "roomId": "room_1001_e8becc",
   "current": 0.034,
   "meterId": "esp32-pzem001",
   "voltage": 232.0,
@@ -336,7 +336,7 @@ electricityChargeNpr = round to nearest NPR cent (Math.round(value × 100) / 100
 curl http://localhost:4000/api/health
 
 # Check readings endpoint
-curl "http://localhost:4000/api/readings?roomId=room_<room-id>&limit=3"
+curl "http://localhost:4000/api/readings?roomId=room_1001_e8becc&limit=3"
 
 # Verify rooms are accessible
 curl "http://localhost:4000/api/rooms" -b "chargemesh_session=sess_..."
@@ -455,7 +455,7 @@ npm run dev
 curl http://localhost:4000/api/health
 
 # Verify readings
-curl "http://localhost:4000/api/readings?roomId=room_<room-id>&limit=3"
+curl "http://localhost:4000/api/readings?roomId=room_1001_e8becc&limit=3"
 
 # Check rooms
 curl "http://localhost:4000/api/rooms" -b "chargemesh_session=sess_..."
