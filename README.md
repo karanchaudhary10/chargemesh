@@ -478,22 +478,6 @@ PGPASSWORD=chargemesh psql -h localhost -U chargemesh -d chargemesh -c "SELECT *
 ```
 
 ---
-
-## About
-
-**Project**: ChargeMesh  
-**Hackathon**: ETHGlobal Mumbai 2026  
-**Version**: 0.1.0 (development)  
-**Status**: Active development - all core features functional  
-
-**Mission**: Bridging the gap between physical electricity meters and digital blockchain verification.
-
-**Core Components**:
-- 📡 **ESP32 Integration**: Real-time power meter data collection (7.6-7.8W, 50Hz, PF 0.98-1.00)
-- 🖥️ **React Dashboard**: Live monitoring and billing interface
-- 💳 **Hedera HCS**: Blockchain-verified payments and audit trails (topic 0.0.11169785)
-- 👥 **Role-Based Access**: Separate landlord and renter workflows with propertyId control
-
 **Contact**: For issues, questions, or contributions, refer to the project repository.
 
 ---
