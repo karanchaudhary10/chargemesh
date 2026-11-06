@@ -80,19 +80,11 @@ export interface TenancyWithRenter extends Tenancy {
   renter: { id: string; name: string; email: string } | null;
 }
 
-export interface SimulatorState {
-  enabled: boolean;
-  intervalMs: number;
-  tickCount?: number;
-  lastTickAt?: string | null;
-}
-
 export interface ServerStatus {
   integrations: {
     hedera: { mode: "disabled" | "configured"; network: string; topicId?: string; mirrorNodeUrl: string };
   };
   storage: { mode: string; persists: boolean };
-  simulator: SimulatorState;
 }
 
 export const api = {
@@ -119,7 +111,7 @@ export const api = {
   rooms: () => request<{ rooms: RoomOverview[] }>("/api/rooms"),
   createRoom: (input: { propertyId: string; name: string; floor?: string; unitType?: string }) =>
     post<{ room: Room }>("/api/rooms", input),
-  createSimulatedMeter: (roomId: string, label?: string) =>
+  createMeter: (roomId: string, label?: string) =>
     post<{ meter: Meter }>(`/api/rooms/${roomId}/meters`, label ? { label } : {}),
   roomTenancies: (roomId: string) =>
     request<{ tenancies: TenancyWithRenter[] }>(`/api/rooms/${roomId}/tenancies`),
@@ -130,10 +122,6 @@ export const api = {
   // readings & meters
   readings: (roomId: string, limit = 500) =>
     request<{ readings: Reading[] }>(`/api/readings?roomId=${encodeURIComponent(roomId)}&limit=${limit}`),
-  simulator: () => request<SimulatorState>("/api/simulator"),
-  setSimulator: (enabled: boolean) =>
-    request<SimulatorState>("/api/simulator", { method: "PATCH", body: JSON.stringify({ enabled }) }),
-  simulatorTick: (meterId?: string) => post<{ readings: Reading[] }>("/api/simulator/tick", meterId ? { meterId } : {}),
 
   // tariffs
   tariffs: () => request<{ tariffs: Tariff[] }>("/api/tariffs"),

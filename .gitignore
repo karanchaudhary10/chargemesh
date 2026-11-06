@@ -11,8 +11,6 @@ cre/.env
 cre/**/.cre/
 *.log
 .DS_Store
-device-simulator/keys/
-device-simulator/state/
 
 # Hedera/secrets
 .env

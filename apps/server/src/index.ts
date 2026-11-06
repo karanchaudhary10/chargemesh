@@ -1,14 +1,13 @@
 import { createApp } from "./app.js";
 import { loadConfig } from "./config.js";
 import { PostgresAuthRepository, PostgresRepositories } from "./postgres-repositories.js";
-import { SimulatorKeyStore } from "./keys.js";
+import { MeterKeyStore } from "./keys.js";
 import { AuditService } from "./audit.js";
 import { HederaService } from "./hedera.js";
 import { EnsService } from "./ens.js";
 import { RoomService } from "./rooms.js";
 import { ReadingService } from "./readings.js";
 import { SessionService } from "./sessions.js";
-import { SimulatorService } from "./simulator.js";
 import { CreService } from "./cre.js";
 import { TariffService } from "./tariffs.js";
 import { BillingService } from "./billing.js";
@@ -23,7 +22,7 @@ async function main(): Promise<void> {
   }
 
   const repositories = await PostgresRepositories.connect(config.databaseUrl);
-  const keys = new SimulatorKeyStore();
+  const keys = new MeterKeyStore();
   keys.load(await repositories.meterKeys.list());
 
   const auth = new AuthService(new PostgresAuthRepository(repositories.pool));
@@ -34,14 +33,9 @@ async function main(): Promise<void> {
   const rooms = new RoomService(repositories, keys, audit, config);
   const readings = new ReadingService(repositories, audit, config);
   const sessions = new SessionService(repositories, audit, hedera);
-  const simulator = new SimulatorService(repositories, keys, readings, config);
   const cre = new CreService(repositories, audit);
   const tariffs = new TariffService(repositories, audit);
   const billing = new BillingService(repositories, audit, tariffs);
-
-  if (config.simulatorEnabled) {
-    await simulator.setEnabled(true);
-  }
 
   const app = createApp({
     config,
@@ -52,33 +46,11 @@ async function main(): Promise<void> {
     rooms,
     readings,
     sessions,
-    simulator,
     cre,
     tariffs,
     billing,
-    auth,
-    simulatorKeys: keys,
-    keys
-  } as any);
-
-  let ticking = false;
-  setInterval(() => {
-    void (async () => {
-      if (ticking || !(await repositories.simulator.get()).enabled) {
-        return;
-      }
-      ticking = true;
-      try {
-        await simulator.tick();
-      } catch (error) {
-        console.warn(
-          `[simulator] Tick failed: ${error instanceof Error ? error.message : "unknown error"}`
-        );
-      } finally {
-        ticking = false;
-      }
-    })();
-  }, config.simulatorIntervalMs).unref();
+    auth
+  });
 
   app.listen(config.port, () => {
     console.log(`ChargeMesh API listening on http://localhost:${config.port}`);

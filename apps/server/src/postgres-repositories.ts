@@ -32,8 +32,6 @@ import type {
   Repositories,
   RepositoryTransaction,
   RoomRepository,
-  SimulatorState,
-  SimulatorStateRepository,
   TariffRepository,
   TenancyRepository,
   UserRepository,
@@ -453,15 +451,6 @@ class PgSingletonRepository<T> {
   }
 }
 
-class PgSimulatorStateRepository
-  extends PgSingletonRepository<SimulatorState>
-  implements SimulatorStateRepository
-{
-  constructor(db: Queryable) {
-    super(db, "system.simulator_state", () => ({ enabled: false, tickCount: 0 }));
-  }
-}
-
 class PgIntegrationStateRepository
   extends PgSingletonRepository<IntegrationState>
   implements IntegrationStateRepository
@@ -519,7 +508,6 @@ class PgRepositorySet implements RepositoryTransaction {
   readonly disputes: DisputeRepository;
   readonly auditEvents: AuditEventRepository;
   readonly creReports: CreReportRepository;
-  readonly simulator: SimulatorStateRepository;
   readonly integrations: IntegrationStateRepository;
   readonly tenancies: TenancyRepository;
   readonly users: UserRepository;
@@ -536,7 +524,6 @@ class PgRepositorySet implements RepositoryTransaction {
     this.disputes = new PgDisputeRepository(db);
     this.auditEvents = new PgAuditEventRepository(db);
     this.creReports = new PgCreReportRepository(db);
-    this.simulator = new PgSimulatorStateRepository(db);
     this.integrations = new PgIntegrationStateRepository(db);
     this.tenancies = new PgTenancyRepository(db);
     this.users = new PgUserRepository(db);

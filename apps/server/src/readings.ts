@@ -26,7 +26,7 @@ export class ReadingService {
 
   async submit(
     submission: ReadingSubmission,
-    source: "meter" | "simulator",
+    source: "meter",
     now = Date.now()
   ): Promise<Reading> {
     if (!submission || typeof submission !== "object") {
@@ -164,7 +164,7 @@ export class ReadingService {
 
       const event = await appendAuditEvent(tx.auditEvents, {
         type: `reading.${validation.status}`,
-        actor: source === "simulator" ? "simulator" : `meter:${rawPayload.meterId}`,
+        actor: `meter:${rawPayload.meterId}`,
         at: receivedAt,
         payload: {
           readingId: reading.id,

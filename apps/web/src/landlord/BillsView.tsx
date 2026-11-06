@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Plus, Calendar, Zap, RefreshCw, X, Send,
-  Trash2, Edit3, ShieldCheck, CheckCircle2, Receipt, BadgeCheck, Wallet, Clock
+  Trash2, ShieldCheck, CheckCircle2, Receipt, BadgeCheck, Wallet, Clock
 } from 'lucide-react';
 import { api, type Bill as ApiBill } from '../api.js';
 import { formatPeriod } from './adapter.js';
@@ -18,7 +18,6 @@ interface BillsViewProps {
   onMarkPaid: (billId: string) => Promise<void>;
   onVerifyPayment: (billId: string) => Promise<void>;
   onDeleteBill: (billId: string) => Promise<void>;
-  onOpenEditReading: (bill: Bill) => void;
   onCreateQuickBill: (roomId: string) => Promise<void>;
   landlordWallets?: any[];
 }
@@ -35,7 +34,6 @@ export const BillsView: React.FC<BillsViewProps> = (props) => {
     onMarkPaid,
     onVerifyPayment,
     onDeleteBill,
-    onOpenEditReading,
     onCreateQuickBill,
     landlordWallets
   } = props as BillsViewProps & { landlordWallets?: any[] };
@@ -668,33 +666,23 @@ export const BillsView: React.FC<BillsViewProps> = (props) => {
                 </button>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
+              {selectedBill.status === 'Draft' ? (
                 <button
-                  onClick={() => onOpenEditReading(selectedBill)}
-                  className="py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-900 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                  onClick={() => void handleDelete(selectedBill)}
+                  disabled={busy}
+                  className="w-full py-2.5 bg-rose-50 hover:bg-rose-100 disabled:opacity-60 text-rose-700 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
                 >
-                  <Edit3 className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Record Reading</span>
+                  <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Delete Draft</span>
                 </button>
-
-                {selectedBill.status === 'Draft' ? (
-                  <button
-                    onClick={() => void handleDelete(selectedBill)}
-                    disabled={busy}
-                    className="py-2.5 bg-rose-50 hover:bg-rose-100 disabled:opacity-60 text-rose-700 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                    <span>Delete Draft</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => onSelectBill(null)}
-                    className="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors"
-                  >
-                    Close
-                  </button>
-                )}
-              </div>
+              ) : (
+                <button
+                  onClick={() => onSelectBill(null)}
+                  className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors"
+                >
+                  Close
+                </button>
+              )}
             </div>
           </div>
         </div>

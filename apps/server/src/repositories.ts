@@ -13,12 +13,6 @@ import type {
   User
 } from "@chargemesh/shared";
 
-export interface SimulatorState {
-  enabled: boolean;
-  tickCount: number;
-  lastTickAt?: string;
-}
-
 export interface IntegrationState {
   hedera: {
     topicId?: string;
@@ -119,11 +113,6 @@ export interface CreReportRepository {
   save(report: CreReport): Promise<void>;
 }
 
-export interface SimulatorStateRepository {
-  get(): Promise<SimulatorState>;
-  save(state: SimulatorState): Promise<void>;
-}
-
 export interface IntegrationStateRepository {
   get(): Promise<IntegrationState>;
   save(state: IntegrationState): Promise<void>;
@@ -149,7 +138,6 @@ export interface RepositoryTransaction {
   disputes: DisputeRepository;
   auditEvents: AuditEventRepository;
   creReports: CreReportRepository;
-  simulator: SimulatorStateRepository;
   integrations: IntegrationStateRepository;
   tenancies?: TenancyRepository;
   users?: UserRepository;

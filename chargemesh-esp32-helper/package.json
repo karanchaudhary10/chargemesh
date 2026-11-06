@@ -1,0 +1,18 @@
+{
+  "name": "chargemesh-esp32-helper",
+  "version": "1.0.0",
+  "description": "Helper utilities for ESP32 + PZEM004T integration with ChargeMesh",
+  "main": "helper.js",
+  "scripts": {
+    "generate-keys": "node helper.js generate-keys",
+    "create-reading": "node helper.js create-reading",
+    "validate": "node helper.js validate",
+    "test-api": "node helper.js test-api"
+  },
+  "keywords": ["chargemesh", "esp32", "pzem004t", "energy", "iot"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@chargemesh/shared": "workspace:."
+  }
+}

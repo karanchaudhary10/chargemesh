@@ -3,7 +3,7 @@ import type { Config } from "./config.js";
 import { signReading } from "@chargemesh/shared/node";
 import type { ReadingSubmission, SignedReadingPayload } from "@chargemesh/shared";
 import { connectTestRepositories, createTestRepositories } from "./test-db.js";
-import { SimulatorKeyStore } from "./keys.js";
+import { MeterKeyStore } from "./keys.js";
 import { HederaService } from "./hedera.js";
 import { AuditService } from "./audit.js";
 import { ReadingService } from "./readings.js";
@@ -15,8 +15,6 @@ const ROOM_ID = "room_test";
 function testConfig(): Config {
   return {
     port: 4000,
-    simulatorEnabled: false,
-    simulatorIntervalMs: 5000,
     staleAfterMs: 120_000,
     maxPowerW: 5_000,
     energyJumpTolerance: 1.5,
@@ -28,7 +26,7 @@ function testConfig(): Config {
 
 async function setup() {
   const repositories = await createTestRepositories();
-  const keys = new SimulatorKeyStore();
+  const keys = new MeterKeyStore();
   const config = testConfig();
   const audit = new AuditService(repositories, new HederaService(config));
   const readings = new ReadingService(repositories, audit, config);
@@ -70,7 +68,7 @@ function payload(overrides: Partial<SignedReadingPayload> = {}): SignedReadingPa
 }
 
 function signed(
-  keys: SimulatorKeyStore,
+  keys: MeterKeyStore,
   body: SignedReadingPayload
 ): ReadingSubmission {
   return {

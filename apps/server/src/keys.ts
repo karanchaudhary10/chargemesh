@@ -1,6 +1,10 @@
 import { generateMeterKeyPair, type MeterKeyPair } from "@chargemesh/shared/node";
 
-export class SimulatorKeyStore {
+/**
+ * In-memory cache of meter signing keys. Keys are generated when a meter is
+ * registered through the API and persisted in `metering.meter_keys`.
+ */
+export class MeterKeyStore {
   private readonly keys = new Map<string, string>();
 
   load(entries: Array<{ meterId: string; privateKeyPem: string }>): void {

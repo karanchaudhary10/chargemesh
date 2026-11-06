@@ -13,8 +13,6 @@ const config = {
   staleAfterMs: 60_000,
   maxPowerW: 5_000,
   energyJumpTolerance: 10,
-  simulatorEnabled: false,
-  simulatorIntervalMs: 5_000,
   hederaNetwork: "testnet",
   hederaMirrorNodeUrl: "https://testnet.mirrornode.hedera.com/api/v1",
   hederaEnabled: false
@@ -164,7 +162,7 @@ describe("renter portal API", () => {
       flags: [],
       reasons: [],
       receivedAt: now,
-      source: "simulator"
+      source: "meter"
     };
     await repositories.readings.save(reading);
 

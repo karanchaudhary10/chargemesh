@@ -72,7 +72,8 @@ export interface SignedReadingPayload {
   simulated?: boolean;
 }
 
-export interface SimulatorSignedReadingPayload {
+/** Older firmware releases used `cumulativeKwh` instead of `cumulativeEnergyKwh`. */
+export interface LegacySignedReadingPayload {
   meterId: string;
   roomId?: string;
   sequence: number;
@@ -86,7 +87,7 @@ export interface SimulatorSignedReadingPayload {
   simulated?: boolean;
 }
 
-export type RawSignedReadingPayload = SignedReadingPayload | SimulatorSignedReadingPayload;
+export type RawSignedReadingPayload = SignedReadingPayload | LegacySignedReadingPayload;
 
 export type ReadingSubmission = RawSignedReadingPayload & { signature: string };
 
@@ -118,7 +119,7 @@ export interface Reading {
   flags: ReadingFlag[];
   reasons: string[];
   receivedAt: IsoTimestamp;
-  source: "meter" | "simulator";
+  source: "meter";
   sessionId?: string;
 }
 
@@ -399,10 +400,6 @@ export interface DashboardData {
   tariff: Tariff | null;
   disputes: Dispute[];
   creReports: CreReport[];
-  simulator: {
-    enabled: boolean;
-    intervalMs: number;
-  };
   integrations: IntegrationStatus;
 }
 

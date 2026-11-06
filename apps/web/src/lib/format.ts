@@ -5,7 +5,7 @@ export function usd(amount: number | undefined | null): string {
 
 export const npr = usd;
 
-/** Simulated meters move in tiny steps, so show more precision for small values. */
+/** Small kWh values need more precision, so show more decimals below a threshold. */
 export function kwh(value: number | undefined | null): string {
   const v = value ?? 0;
   const digits = Math.abs(v) < 10 ? 3 : 1;

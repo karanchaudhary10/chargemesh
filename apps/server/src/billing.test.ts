@@ -14,8 +14,6 @@ const METER_ID = "meter_bill";
 function testConfig(): Config {
   return {
     port: 4000,
-    simulatorEnabled: false,
-    simulatorIntervalMs: 5_000,
     staleAfterMs: 60_000,
     maxPowerW: 5_000,
     energyJumpTolerance: 10,
@@ -98,7 +96,7 @@ async function setup(options: { lateStartReading?: boolean; splitTariff?: boolea
         flags: [],
         reasons: [],
         receivedAt: firstTimestamp,
-        source: "simulator"
+        source: "meter"
       },
       {
         id: "reading_end",
@@ -125,7 +123,7 @@ async function setup(options: { lateStartReading?: boolean; splitTariff?: boolea
         flags: [],
         reasons: [],
         receivedAt: "2026-10-20T12:00:00.000Z",
-        source: "simulator"
+        source: "meter"
       }
     ];
     for (const reading of readings) await tx.readings.save(reading);

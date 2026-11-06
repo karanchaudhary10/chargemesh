@@ -4,7 +4,6 @@ import express, { type NextFunction, type Request, type Response } from "express
 import cors from "cors";
 import { z } from "zod";
 import {
-  attackSchema,
   billCreateSchema,
   billSubmitPaymentSchema,
   billVerifyPaymentSchema,
@@ -18,7 +17,6 @@ import {
   readingSubmissionSchema,
   roomCreateSchema,
   settleSchema,
-  simulatorStateSchema,
   tenancyAssignSchema,
   tenancyEndSchema,
   tariffCreateSchema,
@@ -46,7 +44,6 @@ import type { EnsService } from "./ens.js";
 import type { RoomService } from "./rooms.js";
 import type { ReadingService } from "./readings.js";
 import type { SessionService } from "./sessions.js";
-import type { SimulatorService } from "./simulator.js";
 import type { CreService } from "./cre.js";
 import type { TariffService } from "./tariffs.js";
 import type { BillingService } from "./billing.js";
@@ -63,7 +60,6 @@ export interface AppDependencies {
   rooms: RoomService;
   readings: ReadingService;
   sessions: SessionService;
-  simulator: SimulatorService;
   cre: CreService;
   tariffs: TariffService;
   billing?: BillingService;
@@ -276,7 +272,6 @@ export function createApp(deps: AppDependencies): express.Express {
         database: "postgres",
         schemas: ["identity", "property", "metering", "billing", "audit", "system"]
       },
-      simulator: await deps.simulator.state(),
       policy: {
         staleAfterMs: deps.config.staleAfterMs,
         maxPowerW: deps.config.maxPowerW,
@@ -311,15 +306,14 @@ export function createApp(deps: AppDependencies): express.Express {
     : (_req: Request, _res: Response, next: NextFunction) => next();
 
   app.get("/api/dashboard", async (request, response) => {
-    const [rooms, readings, sessions, disputes, creReports, tariff, simulator] =
+    const [rooms, readings, sessions, disputes, creReports, tariff] =
       await Promise.all([
         deps.rooms.listOverviews(),
         deps.repositories.readings.list(),
         deps.sessions.list(),
         deps.sessions.listDisputes(),
         deps.cre.list(),
-        deps.tariffs.current(),
-        deps.simulator.state()
+        deps.tariffs.current()
       ]);
     const user = requestUser(request);
     const allowedRooms = new Set(await accessibleRoomIds(user, deps));
@@ -350,7 +344,6 @@ export function createApp(deps: AppDependencies): express.Express {
       tariff,
       disputes: visibleDisputes,
       creReports: user.role === "renter" ? [] : creReports.slice(0, 10),
-      simulator,
       integrations: integrationStatus(deps)
     };
     response.json(data);
@@ -802,32 +795,6 @@ export function createApp(deps: AppDependencies): express.Express {
       }
       throw error;
     }
-  });
-
-  app.get("/api/simulator", operatorOnly, async (_request, response) => {
-    response.json(await deps.simulator.state());
-  });
-
-  app.patch("/api/simulator", operatorOnly, async (request, response) => {
-    const input = parse(simulatorStateSchema, request.body);
-    response.json(await deps.simulator.setEnabled(input.enabled));
-  });
-
-  app.post("/api/simulator/tick", operatorOnly, async (request, response) => {
-    const input = parse(z.object({ meterId: z.string().min(1).optional() }), request.body ?? {});
-    if (input.meterId) {
-      const meter = await deps.repositories.meters.findById(input.meterId);
-      if (!meter) throw new AppError(404, "meter_not_found", "Meter was not found");
-      await assertLandlordRoom(request, deps, meter.roomId);
-    }
-    const readings = await deps.simulator.tick(input.meterId);
-    response.status(201).json({ readings });
-  });
-
-  app.post("/api/simulator/attack", operatorOnly, async (request, response) => {
-    const input = parse(attackSchema, request.body);
-    const result = await deps.simulator.attack(input.type, input.meterId);
-    response.status(202).json(result);
   });
 
   app.get("/api/tariff", async (_request, response) => {

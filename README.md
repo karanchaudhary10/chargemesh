@@ -2,7 +2,7 @@
 
 ChargeMesh is a rental-room electricity metering and fair-billing prototype. It verifies Ed25519-signed submeter readings, quarantines implausible data, bills only accepted energy in NPR, keeps an append-only audit hash chain, and produces evidence for Chainlink CRE attestation.
 
-This is a software prototype with simulated meters. It does not claim real hardware ingestion, production-grade key custody, or active blockchain integrations unless those integrations are explicitly configured and verified.
+This is a prototype that ingests signed readings from physical ESP32 + PZEM-004T submeters. It does not claim production-grade key custody or active blockchain integrations unless those integrations are explicitly configured and verified.
 
 ## What is implemented
 
@@ -18,7 +18,7 @@ This is a software prototype with simulated meters. It does not claim real hardw
 - Rejection/quarantine rules for invalid signatures, replays, duplicates, stale/future data, meter resets, room mismatches, implausible power, and implausible energy jumps.
 - Billing in Nepali rupees from accepted cumulative energy only, with boundary reading references, tariff snapshot, and defined rounding.
 - Bill disputes, landlord responses/outcomes, plus legacy session start/close and optional HTS test-token settlement.
-- A clearly labelled software meter simulator and a separate physical-meter registration path for signed reading submissions.
+- A physical-meter registration path for Ed25519-signed reading submissions from ESP32 + PZEM-004T hardware.
 - Local append-only audit chain with integrity verification.
 - Optional Hedera HCS notarization and Mirror Node lookup.
 - Optional ENS name resolution with an explicit RPC URL.
@@ -41,7 +41,7 @@ One database holds six schemas, split by concern:
 | `metering` | `meters`, `meter_keys`, `readings` |
 | `billing` | `tariffs`, `bills`, `disputes` |
 | `audit` | `events`, `cre_reports` |
-| `system` | `simulator_state`, `integration_state` |
+| `system` | `integration_state` |
 
 The server defines entity repositories in `apps/server/src/repositories.ts` and implements
 them with `PostgresRepositories` in `apps/server/src/postgres-repositories.ts`. Business
@@ -50,9 +50,10 @@ keeps its full object in a `data jsonb` column, with indexed columns for the fie
 lookups. Multi-step writes run in a serialized PostgreSQL transaction so audit-chain
 sequencing and read-then-write checks cannot interleave.
 
-Simulator meter private keys are persisted in `metering.meter_keys` and loaded into the
-signing key cache at startup, so simulator meters keep working after a restart. This is still
-a prototype key store, not production key custody.
+Meter key material generated through the API is persisted in `metering.meter_keys` and loaded
+into the signing key cache at startup. Meter readings themselves are signed on the ESP32 with
+its Ed25519 private key; this server-side store is still a prototype key store, not production
+key custody.
 
 Tests use a separate `TEST_DATABASE_URL` whose database name must end in `_test`; each test
 truncates that database before running.
@@ -84,7 +85,9 @@ npm run dev
 
 `npm run dev` starts the API and Vite together. Vite proxies `/api` to port 4000.
 
-To enable continuous simulated readings, set `SIMULATOR_ENABLED=true` in `.env` or use the dashboard control. The server loads `.env` from `apps/server/.env` or the repository root.
+To receive live readings, flash the ESP32 firmware in `esp32-pzem004t-chargemesh/` with the
+meter's room ID and Wi-Fi credentials, then register its public key for the room. The firmware
+posts a signed reading every 10 seconds.
 
 ## Useful commands
 
@@ -104,10 +107,10 @@ Nothing is preloaded. Use two browser accounts (or separate browser profiles) fo
 
 1. Register a landlord account and sign in.
 2. Create a property, then add one or more rooms under it.
-3. Register a software simulator meter for a room from **Meters**, or register a physical meter public key.
+3. Register a physical meter's Ed25519 public key for a room from **Meters**.
 4. Create a room tariff with its agreed NPR/kWh rate and effective time.
 5. Register a renter account, then assign that renter to the room using the account email on **Properties & rooms**.
-6. Generate signed simulator readings. Billing requires accepted readings at or before both selected period boundaries; create an initial baseline before the bill period.
+6. Power the ESP32 + PZEM-004T meter so it submits signed readings. Billing requires accepted readings at or before both selected period boundaries; create an initial baseline before the bill period.
 7. Generate a draft bill, review its reading references, usage, tariff, and amount, then issue it. Only issued bills appear in the renter account.
 8. Sign in as the renter to inspect readings and the bill evidence. The renter can submit a dispute; the landlord can record a written response and outcome on **Disputes**.
 9. HCS evidence is available only when configured. A local signature verification and audit hash support integrity checks but do not prove physical meter accuracy.
@@ -171,7 +174,7 @@ See `cre/chargemesh-validation/README.md` for details.
 | Method | Path | Purpose |
 | --- | --- | --- |
 | GET | `/api/health` | Liveness |
-| GET | `/api/status` | Storage, integrations, simulator, policy config |
+| GET | `/api/status` | Storage, integrations, policy config |
 | GET | `/api/dashboard` | Dashboard aggregate |
 | POST | `/api/auth/register` | Create landlord or renter account |
 | POST | `/api/auth/login` | Start secure HTTP-only session |
@@ -187,9 +190,6 @@ See `cre/chargemesh-validation/README.md` for details.
 | GET | `/api/meters` | List accessible meters and source type |
 | GET | `/api/readings` | List/filter readings |
 | POST | `/api/readings` | Submit a signed reading |
-| GET/PATCH | `/api/simulator` | Read/toggle simulator |
-| POST | `/api/simulator/tick` | Generate signed readings |
-| POST | `/api/simulator/attack` | Generate an attack reading |
 | GET/POST | `/api/tariffs` | List/create room tariffs with effective dates |
 | POST | `/api/bills/preview` | Calculate a draft bill without saving it |
 | GET | `/api/rooms/:roomId/bill-suggestion` | Suggest the next billing period for a room |
@@ -223,14 +223,14 @@ See `cre/chargemesh-validation/README.md` for details.
 ### Implemented core workflows
 
 Session-based landlord/renter authentication, API-side role and room scoping, property/room
-management, renter assignment, software meter setup, effective-dated tariffs, draft/review/issue
-billing, bill disputes, signed readings, local audit evidence, and the isolated device simulator.
+management, renter assignment, physical meter registration, effective-dated tariffs, draft/review/issue
+billing, bill disputes, signed readings, and local audit evidence.
 
 ### Still deferred or incomplete
 
 - Production schema migrations, backups, and deployment operations.
 - Production session-store and password-reset/invitation lifecycle; renters must register before assignment.
-- Physical ESP32/energy-meter firmware and hardware installation/safety review.
+- Physical ESP32/energy-meter firmware is provided in `esp32-pzem004t-chargemesh/`; installation and electrical safety review remain the operator's responsibility.
 - Payment collection. HTS settlement is an optional test-token integration, not NPR fiat payment.
 - Live Hedera/CRE integration verification, durable HCS submission reconciliation, and deployment operations.
 - Bill correction/reissue mechanics after a dispute is upheld; current disputes preserve the outcome/response but do not automatically alter an issued bill.
@@ -239,7 +239,7 @@ billing, bill disputes, signed readings, local audit evidence, and the isolated 
 
 - PostgreSQL is the source of truth, but the server still assumes a single API process for the in-process transaction queue. The advisory lock keeps transactions serialized across processes.
 - The current signup flow lets anyone create a landlord account. Property ownership checks prevent access to other landlords' data, but production onboarding/invitation controls are still required.
-- Simulator private keys are stored in plaintext in `metering.meter_keys` and cached in memory. This is a development convenience, not production key management.
+- Meter private keys generated through the API are stored in plaintext in `metering.meter_keys` and cached in memory. This is a development convenience, not production key management.
 - CORS is open by default.
 - HCS/HTS/ENS behavior is implemented against current SDKs but has not been verified with live credentials in this environment.
 - The CRE workflow is source-complete but unexecuted without Bun and the CRE CLI.

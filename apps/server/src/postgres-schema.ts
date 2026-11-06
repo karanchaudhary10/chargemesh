@@ -138,12 +138,6 @@ CREATE TABLE IF NOT EXISTS audit.cre_reports (
   data      jsonb NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS system.simulator_state (
-  id         text PRIMARY KEY DEFAULT 'singleton',
-  data       jsonb NOT NULL,
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
 CREATE TABLE IF NOT EXISTS system.integration_state (
   id         text PRIMARY KEY DEFAULT 'singleton',
   data       jsonb NOT NULL,
@@ -170,6 +164,6 @@ TRUNCATE identity.users, identity.sessions, identity.user_wallets,
   metering.meters, metering.meter_keys, metering.readings,
   billing.tariffs, billing.bills, billing.disputes,
   audit.events, audit.cre_reports,
-  system.simulator_state, system.integration_state
+  system.integration_state
 RESTART IDENTITY CASCADE;
 `;

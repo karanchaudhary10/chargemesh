@@ -4,8 +4,6 @@ export interface Config {
   staleAfterMs: number;
   maxPowerW: number;
   energyJumpTolerance: number;
-  simulatorEnabled: boolean;
-  simulatorIntervalMs: number;
   creReportToken?: string;
   hederaNetwork: "testnet" | "mainnet" | "previewnet";
   hederaOperatorId?: string;
@@ -67,8 +65,6 @@ export function loadConfig(): Config {
     staleAfterMs: numberEnv("STALE_AFTER_MS", 60_000),
     maxPowerW: numberEnv("MAX_POWER_W", 5_000),
     energyJumpTolerance: numberEnv("ENERGY_JUMP_TOLERANCE", 10),
-    simulatorEnabled: boolEnv("SIMULATOR_ENABLED", false),
-    simulatorIntervalMs: numberEnv("SIMULATOR_INTERVAL_MS", 5_000),
     creReportToken: env("CRE_REPORT_TOKEN"),
     hederaNetwork,
     hederaOperatorId: env("HEDERA_OPERATOR_ID"),

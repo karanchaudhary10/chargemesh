@@ -26,8 +26,7 @@ import { SettingsView } from "./SettingsView.js";
 import { TariffModal } from "./TariffModal.js";
 import { CreateBillModal } from "./CreateBillModal.js";
 import { AddRoomModal, type NewRoomInput } from "./AddRoomModal.js";
-import { EditReadingModal } from "./EditReadingModal.js";
-import type { Bill, PropertySettings } from "./types.js";
+import type { PropertySettings } from "./types.js";
 
 export type LandlordTab = NavTab;
 
@@ -47,7 +46,6 @@ export function LandlordApp({
   const [createBillRoomId, setCreateBillRoomId] = useState<string | undefined>();
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [selectedBillId, setSelectedBillId] = useState<string | null>(null);
-  const [recordBillId, setRecordBillId] = useState<string | null>(null);
   const [assignRoomUnit, setAssignRoomUnit] = useState<string | undefined>();
 
   const workspace = useMemo(() => {
@@ -102,7 +100,6 @@ export function LandlordApp({
   const openDisputes = workspace.disputes.length;
   const selectedBill =
     workspace.bills.find((bill) => bill.id === selectedBillId) ?? null;
-  const recordBill = workspace.bills.find((bill) => bill.id === recordBillId) ?? null;
 
   const handleUpdateTariff = async (rate: number) => {
     await api.updateProperty(property.id, { defaultRateNprPerKwh: rate });
@@ -145,7 +142,7 @@ export function LandlordApp({
         unitType: input.type
       });
       await api.createTariff(room.id, input.rate);
-      await api.createSimulatedMeter(room.id, input.meterId);
+      await api.createMeter(room.id, input.meterId);
       if (input.renterEmail) {
         await api.assignRenter(room.id, input.renterEmail);
       }
@@ -226,29 +223,6 @@ export function LandlordApp({
         resolution: customMessage
       });
     }
-    await data.reload();
-  };
-
-  const handleRecordReading = async (roomId: string) => {
-    const room = data.rooms.find((candidate) => candidate.id === roomId);
-    const meterId = room?.meter?.id;
-    if (!meterId) {
-      throw new Error("This room has no connected sub-meter.");
-    }
-    await api.simulatorTick(meterId);
-    await data.reload();
-  };
-
-  const handleSyncAll = async () => {
-    await api.simulatorTick();
-    await data.reload();
-  };
-
-  const handleRecordBillReading = async (bill: Bill) => {
-    if (!bill.rawMeterId) {
-      throw new Error("This bill's sub-meter is no longer connected.");
-    }
-    await api.simulatorTick(bill.rawMeterId);
     await data.reload();
   };
 
@@ -334,19 +308,12 @@ export function LandlordApp({
             onMarkPaid={handleMarkPaid}
             onVerifyPayment={handleVerifyPayment}
             onDeleteBill={handleDeleteBill}
-            onOpenEditReading={(bill) => setRecordBillId(bill.id)}
             onCreateQuickBill={handleQuickBill}
             landlordWallets={workspace?.wallets || []}
           />
         )}
 
-        {tab === "readings" && (
-          <MeterReadingsView
-            rooms={workspace.rooms}
-            onUpdateReading={handleRecordReading}
-            onSyncAll={handleSyncAll}
-          />
-        )}
+        {tab === "readings" && <MeterReadingsView rooms={workspace.rooms} />}
 
         {tab === "disputes" && (
           <DisputesView
@@ -390,13 +357,6 @@ export function LandlordApp({
         onAddRoom={handleAddRoom}
         existingCount={workspace.rooms.length}
         currentRate={settings.electricityRateNpr}
-      />
-
-      <EditReadingModal
-        isOpen={recordBill !== null}
-        onClose={() => setRecordBillId(null)}
-        bill={recordBill}
-        onRecord={handleRecordBillReading}
       />
     </div>
   );

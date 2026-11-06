@@ -22,7 +22,8 @@ export const signedReadingPayloadSchema = z.object({
   simulated: z.boolean().optional()
 });
 
-export const simulatorReadingSubmissionSchema = z.object({
+/** Older firmware releases used `cumulativeKwh` instead of `cumulativeEnergyKwh`. */
+export const legacyReadingSubmissionSchema = z.object({
   meterId: z.string().min(1).max(120),
   roomId: z.string().min(1).max(120).optional(),
   cumulativeKwh: finiteNonNegative,
@@ -38,7 +39,7 @@ export const simulatorReadingSubmissionSchema = z.object({
 });
 
 export const readingSubmissionSchema = z
-  .union([signedReadingPayloadSchema.extend({ signature: z.string().min(1).max(4000) }), simulatorReadingSubmissionSchema])
+  .union([signedReadingPayloadSchema.extend({ signature: z.string().min(1).max(4000) }), legacyReadingSubmissionSchema])
   .superRefine((value, ctx) => {
     const hasCumulativeKwh = "cumulativeKwh" in value && value.cumulativeKwh !== undefined;
     const hasCumulativeEnergyKwh = "cumulativeEnergyKwh" in value && (value as any).cumulativeEnergyKwh !== undefined;
@@ -204,15 +205,6 @@ export const settleSchema = z.object({
   payerAccountId: z.string().regex(/^\d+\.\d+\.\d+$/, "Expected a Hedera account ID such as 0.0.1234")
 });
 
-export const attackSchema = z.object({
-  type: z.enum(["tamper", "duplicate", "replay", "stale", "unregistered", "suspicious"]),
-  meterId: z.string().min(1).max(120).optional()
-});
-
-export const simulatorStateSchema = z.object({
-  enabled: z.boolean()
-});
-
 const findingSchema = z.object({
   code: z.string().min(1).max(120),
   severity: z.enum(["error", "warning"]),
@@ -242,5 +234,4 @@ export type TariffUpdateInput = z.infer<typeof tariffUpdateSchema>;
 export type DisputeOpenInput = z.infer<typeof disputeOpenSchema>;
 export type DisputeResolveInput = z.infer<typeof disputeResolveSchema>;
 export type SettleInput = z.infer<typeof settleSchema>;
-export type AttackInput = z.infer<typeof attackSchema>;
 export type CreReportInput = z.infer<typeof creReportSchema>;

@@ -11,7 +11,7 @@ import {
   type Tariff
 } from "@chargemesh/shared";
 import type { Config } from "./config.js";
-import type { SimulatorKeyStore } from "./keys.js";
+import type { MeterKeyStore } from "./keys.js";
 import type { Repositories } from "./repositories.js";
 import { appendAuditEvent } from "./audit-core.js";
 import type { AuditService } from "./audit.js";
@@ -30,7 +30,7 @@ function slug(value: string): string {
 export class RoomService {
   constructor(
     private readonly repositories: Repositories,
-    private readonly keys: SimulatorKeyStore,
+    private readonly keys: MeterKeyStore,
     private readonly audit: AuditService,
     private readonly config: Config
   ) {}
@@ -86,7 +86,7 @@ export class RoomService {
         label: input.label?.trim() || meterId,
         publicKeyPem: pair.publicKeyPem,
         publicKey: pair.publicKeyPem,
-        deviceType: input.deviceType ?? "simulator",
+        deviceType: input.deviceType ?? "physical",
         status: "active",
         maxPowerW: input.maxPowerW ?? this.config.maxPowerW,
         staleAfterMs: input.staleAfterMs ?? this.config.staleAfterMs,
