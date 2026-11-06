@@ -466,8 +466,43 @@ PGPASSWORD=chargemesh psql -h localhost -U chargemesh -d chargemesh -c "SELECT *
 # Hard refresh browser
 # Ctrl+F5 (Windows/Linux) or Cmd+Shift+R (Mac)
 
-# HCS Mirror Node
-# https://mirrornode.testnet.hedera.com/api/v1/topics/0.0.11169785/messages
+# 🔗 HashScan / Hedera Mirror Node Links
+# Copy and paste these links to navigate to HCS events during your demo:
+
+## Topic Overview (shows all events)
+🌐 `https://mirrornode.testnet.hedera.com/topics/0.0.11169785`
+
+## Latest Messages (most recent HCS events)
+🌐 `https://mirrornode.testnet.hedera.com/api/v1/topics/0.0.11169785/messages?limit=5`
+
+## Specific Message (replace SEQUENCE with actual sequence number from console)
+🌐 `https://mirrornode.testnet.hedera.com/message/0.0.11169785,SEQUENCE`
+
+## Example (from your console readings):
+🌐 `https://mirrornode.testnet.hedera.com/message/0.0.11169785,1793967400`
+
+## Renter Account (HashPack testnet)
+🌐 `https://mirrornode.testnet.hedera.com/account/0.0.11206800`
+
+## Bill Transaction (replace TRANSACTION_ID)
+🌐 `https://mirrornode.testnet.hedera.com/transaction/TRANSACTION_ID`
+
+## Example Transaction ID from your bills:
+🌐 `https://mirrornode.testnet.hedera.com/transaction/0.0.11206800`
+
+## Live Data Console Links (copy from your terminal)
+When you see readings in your API server console, copy the sequence number and use:
+🌐 `https://mirrornode.testnet.hedera.com/message/0.0.11169785,SEQUENCE_FROM_CONSOLE`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**How to use during demo:**
+1. Run `npm run dev` to start servers
+2. Press Ctrl+F5 in browser, wait 5-10s for "Live" status
+3. Readings appear in API terminal with sequence numbers
+4. Copy the sequence number (e.g., 1793967400)
+5. Paste into: `https://mirrornode.testnet.hedera.com/message/0.0.11169785,1793967400`
+6. Judge can see the HCS event with your meter reading data!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Login
 # Landlord: register via /api/auth/register
